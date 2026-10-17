@@ -29,7 +29,7 @@ Every choice between alternatives, and every gap the code leaves that we filled 
 - **Consequences:** Any future LLM note-taking step must use a local model or be explicitly opt-in with a superseding decision.
 - **Evidence / source:** Owner choice, 2026-10-17.
 
-## D5. Media never committed; no READMEs inside videos/ or frames/ for now (2026-10-17; status: accepted)
+## D5. Media never committed; no READMEs inside videos/ or frames/ for now (2026-10-17; status: superseded by D12)
 - **Context:** `videos/` holds third-party videos (sample is 68 MB); `pdfs/` and `frames/` are outputs. The usual convention tracks a README inside each ignored directory, but `main.py` deletes every non-`.mp4` file in `videos/` (after attempting an ffmpeg conversion) and everything in `frames/`.
 - **Decision:** Ignore `videos/`, `pdfs/`, `frames/` entirely; document the layout in `AGENTS.md` instead of per-directory READMEs.
 - **Alternatives:** Tracked READMEs - would be deleted by the next run of `main.py`.
@@ -63,3 +63,24 @@ Every choice between alternatives, and every gap the code leaves that we filled 
 - **Alternatives:** Local LLM - owner prefers not to; no LLM ever - owner wants it eventually.
 - **Consequences:** Keep page rendering separate from text content so a notes field can be added later.
 - **Evidence / source:** Owner, 2026-10-17.
+
+## D10. Slide detection: settle-then-capture on changed-pixel fraction (2026-10-17; status: accepted)
+- **Context:** The prototype captured the first frame after a big mean difference: it missed most slides and caught fades (plan, "Why the prototype fails").
+- **Decision:** Sample 2 fps via ffmpeg; compare 320 px-wide blurred grayscale thumbnails by the fraction of pixels whose gray level changed by > 20. A run is frames within 0.5% change of the run's first frame; a run lasting ≥ 1.5 s is a slide, shown by its last frame. Near-uniform thumbnails (std < 5) are dropped. Consecutive slides merge if they differ by ≤ 1% or the later one is a build-up (the earlier one's content is preserved and changes lie on its background). Page intervals tile the whole video so no speech is lost later. Videos with < 40% stable time get a warning (D8); if nothing is stable, frames every 60 s are used.
+- **Alternatives:** SSIM or perceptual hash (plan's first idea) - a mean score hides a small changed region (one changed line on a white slide scores ~0.97) and the build-up check needs a pixel mask anyway; PySceneDetect - detects cuts, not settled slides.
+- **Consequences:** Thresholds are tuned on synthetic clips and one keynote so far; tune on the lecture. A moving speaker in front of or beside a slide prevents it from settling (keynote missed "large language model" at ~3:22) - region masking is future work (D7).
+- **Evidence / source:** `pytest` 10 passed (synthetic clips); keynote run 2026-10-17 in WORKLOG.
+
+## D11. Revisited slides are kept as separate pages (2026-10-17; status: accepted)
+- **Context:** The plan said to dedupe a slide shown again later. With transcripts (D2), a revisit carries different speech.
+- **Decision:** Only *consecutive* duplicates are merged; a slide shown again after another slide gets its own page.
+- **Alternatives:** Global dedupe - loses the time order of the transcript.
+- **Consequences:** Some repeated pages in talks that flip back and forth.
+- **Evidence / source:** Reasoning, 2026-10-17 (plausible, untested on a real lecture).
+
+## D12. Prototype replaced by the `videotopdf` package; inputs are never modified (2026-10-17; status: accepted)
+- **Context:** `main.py` converted non-mp4 inputs and deleted the originals, and wiped `frames/` (D5). Plan step 1.
+- **Decision:** `main.py` is removed (it remains in git history, commit a8b314e). The package reads any ffmpeg-decodable file directly, keeps keyframes in memory as JPEG, writes only to the output directory and creates it. Media is still never committed. `frames/` is no longer used.
+- **Alternatives:** Keep `main.py` alongside - two diverging pipelines.
+- **Consequences:** READMEs inside `videos/` would now be safe; not added (the layout is documented in AGENTS.md).
+- **Evidence / source:** `tests/test_cli.py` checks the input clip and a non-video file survive a run.

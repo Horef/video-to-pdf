@@ -1,4 +1,4 @@
-Status: proposed (2026-10-17)
+Status: in progress - steps 1, 2 done; 5 partly (2026-10-17)
 
 # v1: slides + transcript PDF
 
@@ -18,17 +18,17 @@ On `Introducing_r1.mp4` (1529.9 s keynote) `main.py` kept 7 frames: a black fram
 - Timestamps are drawn in white and vanish on white slides.
 
 ## Steps
-1. **Restructure** into a small package (`videotopdf/`: `frames.py`, `slides.py`, `transcribe.py`, `render.py`, `cli.py`) with a CLI taking an input path and output path. Never delete inputs; create output dirs (D5 follow-up). Keep `main.py` until the new CLI matches it, then remove it.
-2. **Slide detection** (`slides.py`), outputting `(start_s, end_s, frame)` intervals:
+1. [x] **Restructure** into a small package (`videotopdf/`: `frames.py`, `slides.py`, `transcribe.py`, `render.py`, `cli.py`; `transcribe.py` comes with step 3) with a CLI taking an input path and output path. Never delete inputs; create output dirs (D5 follow-up). Keep `main.py` until the new CLI matches it, then remove it.
+2. [x] **Slide detection** (D10, D11) (`slides.py`), outputting `(start_s, end_s, frame)` intervals:
    - Sample ~2 fps via ffmpeg/OpenCV at reduced resolution, grayscale.
-   - Compare to the last *stable* frame with SSIM or a perceptual hash, not raw mean difference.
+   - Compare to the run's first frame by changed-pixel fraction (chosen over SSIM / perceptual hash, D10).
    - Capture a slide only after the picture has been stable for ~1-2 s; keep the last frame of a stable run so incremental builds end up complete.
    - Drop frames that are near-uniform (black/white fades).
-   - Merge consecutive slides where the later one contains the earlier (bullet build-ups); dedupe revisited slides.
+   - Merge consecutive slides where the later one contains the earlier (bullet build-ups). Revisited slides stay separate (D11).
    - Flag videos that don't look slide-based and warn (D8).
-3. **Transcription** (`transcribe.py`): compare `mlx-whisper` vs a `whisper.cpp` binding on a 5-minute clip (speed, RAM, quality); record choice as a new D entry; output timestamped segments. Ask before downloading models.
-4. **Join + render** (`render.py`): assign each segment to the slide interval containing its midpoint; render pages (slide image on top, timestamp, wrapped transcript below) with Pillow or reportlab.
-5. **Tests**: tiny synthetic clips generated in the test (solid-color "slides" with fades and a build-up) for slide detection; a canned segment list for the join; no real videos, no model in the default test run.
+3. [ ] **Transcription** (`transcribe.py`): compare `mlx-whisper` vs a `whisper.cpp` binding on a 5-minute clip (speed, RAM, quality); record choice as a new D entry; output timestamped segments. Ask before downloading models.
+4. [ ] **Join + render** (`render.py`): assign each segment to the slide interval containing its midpoint; render pages (slide image on top, timestamp, wrapped transcript below) with Pillow or reportlab.
+5. [~] **Tests** (slide detection and CLI done; join tests come with step 4): tiny synthetic clips generated in the test (solid-color "slides" with fades and a build-up) for slide detection; a canned segment list for the join; no real videos, no model in the default test run.
 
 ## Verification
 - `pytest` green on synthetic clips.

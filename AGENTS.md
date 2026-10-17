@@ -13,20 +13,20 @@ Goal, scope and open questions: `docs/BRIEF.md`. Current work plan: `docs/plans/
 - Env: conda env `vid_to_pdf` (Python 3.12), defined in `environment.yml`. Run everything as `conda run -n vid_to_pdf python …`. Never use the base interpreter.
 - Install / recreate: `conda env create -f environment.yml` (update: `conda env update -f environment.yml --prune`). Add every new dependency to `environment.yml`.
 - `ffmpeg` comes from Homebrew (`/opt/homebrew/bin/ffmpeg`), not from the env.
-- Run: `conda run -n vid_to_pdf python main.py` - processes every file in `videos/`, writes `pdfs/<name>.pdf`.
-- Tests: none yet (see STATUS). Once they exist they must run offline and fast on tiny synthetic clips, never on real videos.
+- Run: `conda run -n vid_to_pdf python -m videotopdf videos/ -o pdfs` - takes video files or directories, writes `<out>/<video stem>.pdf`. `--help` lists tuning flags.
+- Tests (offline, ~5 s): `conda run -n vid_to_pdf python -m pytest -q`. They build tiny synthetic clips with ffmpeg; never use real videos in tests.
 - Limits: keep local runs modest (≲ 6 GB RAM). Ask before downloading models or large files, or running on long videos for tuning sweeps.
 
 ## Layout
-- `main.py` - the original 2025 prototype (frame-difference slide capture → PDF). To be replaced by the v1 plan.
+- `videotopdf/` - the package: `frames.py` (ffmpeg frame reader), `slides.py` (slide detection, D10), `render.py` (PDF pages), `cli.py`.
+- `tests/` - pytest; `conftest.py` draws synthetic slide clips.
 - `videos/` - input videos. Git-ignored.
 - `pdfs/` - output PDFs. Git-ignored.
-- `frames/` - scratch for extracted frames, wiped by `main.py` on every run. Git-ignored.
 - `docs/` - brief, status, worklog, decisions, plans.
 
 ## Boundaries
 - Never commit: videos, PDFs, frames, transcripts, model weights, `.idea/`, `.env*`. They are in `.gitignore`; never `git add -f` them. Sample videos are third-party content.
-- `main.py` deletes files: it removes every non-`.mp4` file in `videos/` after trying to convert it, and everything in `frames/`. Do not put READMEs or anything else there while that code exists (D5).
+- The pipeline never modifies or deletes its inputs; it only writes into the output directory (D12).
 
 ## Conventions
 - Local only (D4): no network calls at runtime other than a one-time, user-approved model download.

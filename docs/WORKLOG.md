@@ -1,6 +1,18 @@
 # Work log
 Newest first. Each entry: what changed, how it was verified, what's next. Never edit or delete past entries.
 
+## 2026-10-17 - Plan steps 1-2: videotopdf package and new slide detection
+Changed: replaced `main.py` with the `videotopdf` package (ffmpeg frame reader, settle-then-capture slide detection with build-up merging, PDF pages with a timestamp header band, CLI) and pytest tests on synthetic clips. Removed unused pandas, added pytest. The GitHub repo was still empty and the lecture was not on this machine at session start. Decisions: D10, D11, D12 (supersedes D5).
+
+| Verification command | Result |
+|---|---|
+| `gh api repos/Horef/video-to-pdf/commits` (session start) | "Git Repository is empty" |
+| `conda run -n vid_to_pdf python -m pytest -q` | 10 passed in 4.67 s (synthetic clips) |
+| `/usr/bin/time -l … python -m videotopdf videos/Introducing_r1.mp4 -o pdfs/v1 -q` | 48 pages, 16% stable, warning printed, 6.6 s, 404 MB max RSS |
+| Contact sheet of the 48 keynote pages (scratch script, inspected by eye) | all pages are real content (screens, product shots, price slides); no blank/fade frames; near-duplicates during demos; "large language model (LLM)" slide (~3:22, speaker in front) missed |
+
+Next: run on the lecture once downloaded; plan step 3 (transcription).
+
 ## 2026-10-17 - Owner answers; switch remote to video-to-pdf
 Changed: remote is now `git@github.com:Horef/video-to-pdf.git` (owner created it). Recorded owner answers: lecture test video YouTube `KV37KIh2ZAk`; keynotes a later goal (D7); no-slide videos warn and output frames (D8); post-v1 LLM notes deferred, likely Gemini API (D9); D1 and D6 confirmed.
 
