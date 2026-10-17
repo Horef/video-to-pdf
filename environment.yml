@@ -1,0 +1,10 @@
+name: vid_to_pdf
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - opencv
+  - pillow
+  - tqdm

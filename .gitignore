@@ -1,0 +1,37 @@
+# Media: third-party input videos and generated outputs. Never commit (D5).
+/videos/
+/pdfs/
+/frames/
+/transcripts/
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.m4a
+*.wav
+
+# Model weights (downloaded locally)
+/models/
+*.gguf
+*.safetensors
+
+# Secrets and machine-local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+CLAUDE.local.md
+.claude/settings.local.json
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
