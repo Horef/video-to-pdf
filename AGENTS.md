@@ -11,17 +11,21 @@ Goal, scope and open questions: `docs/BRIEF.md`. Current work plan: `docs/plans/
 
 ## Environment and commands
 - Env: conda env `vid_to_pdf` (Python 3.12), defined in `environment.yml`. Run everything as `conda run -n vid_to_pdf python …`. Never use the base interpreter.
-- Install / recreate: `conda env create -f environment.yml` (update: `conda env update -f environment.yml --prune`). Add every new dependency to `environment.yml`.
+- Install / recreate: `conda env create -f environment.yml` (update: `conda env update -f environment.yml --prune`). Add every new dependency to `environment.yml` (conda-forge first; pip section only for what conda lacks).
 - `ffmpeg` comes from Homebrew (`/opt/homebrew/bin/ffmpeg`), not from the env.
 - Run: `conda run -n vid_to_pdf python -m videotopdf videos/ -o pdfs` - takes video files or directories, writes `<out>/<video stem>.pdf`. `--help` lists tuning flags.
-- Tests (offline, ~5 s): `conda run -n vid_to_pdf python -m pytest -q`. They build tiny synthetic clips with ffmpeg; never use real videos in tests.
+- Transcribe only: `conda run -n vid_to_pdf python -m videotopdf.transcribe VIDEO -o transcripts/NAME.srt` (whisper.cpp + VAD, D13).
+- Models (one-time, git-ignored `models/`; the code never downloads them, D4):
+  `curl -L -o models/ggml-large-v3-turbo-q5_0.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin` (574 MB) and
+  `curl -L -o models/ggml-silero-v6.2.0.bin https://huggingface.co/ggml-org/whisper-vad/resolve/main/ggml-silero-v6.2.0.bin` (0.9 MB).
+- Tests (offline, ~5 s): `conda run -n vid_to_pdf python -m pytest -q`. They build tiny synthetic clips with ffmpeg; never use real videos in tests. Opt-in real-model test: `… pytest -q -m model` (needs `models/` and macOS `say`).
 - Limits: keep local runs modest (≲ 6 GB RAM). Ask before downloading models or large files, or running on long videos for tuning sweeps.
 
 ## Layout
-- `videotopdf/` - the package: `frames.py` (ffmpeg frame reader), `slides.py` (slide detection, D10), `render.py` (PDF pages), `cli.py`.
+- `videotopdf/` - the package: `frames.py` (ffmpeg frame reader), `slides.py` (slide detection, D10), `render.py` (PDF pages), `transcribe.py` (whisper.cpp, D13), `cli.py`.
 - `tests/` - pytest; `conftest.py` draws synthetic slide clips.
 - `videos/` - input videos. Git-ignored.
-- `pdfs/` - output PDFs. Git-ignored.
+- `pdfs/` - output PDFs. `transcripts/` - SRT output. `models/` - whisper/VAD model files. All git-ignored.
 - `docs/` - brief, status, worklog, decisions, plans.
 
 ## Boundaries

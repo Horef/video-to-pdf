@@ -8,3 +8,6 @@ dependencies:
   - pillow
   - tqdm
   - pytest
+  - pip
+  - pip:
+      - pywhispercpp==1.5.1

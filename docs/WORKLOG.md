@@ -1,6 +1,32 @@
 # Work log
 Newest first. Each entry: what changed, how it was verified, what's next. Never edit or delete past entries.
 
+## 2026-10-17 - Plan step 3: STT engine comparison and transcribe.py
+Changed: compared mlx-whisper 0.4.3 and pywhispercpp 1.5.1 (whisper.cpp, Metal) on a 5-minute clip (keynote 2:00-7:00, 16 kHz mono) on an M2 Max; chose whisper.cpp + large-v3-turbo q5_0 + Silero VAD (D13). Added `videotopdf/transcribe.py` (standalone SRT output) and tests. Owner-approved downloads into `models/`: mlx small (481 MB), mlx turbo (1.6 GB), ggml turbo q5_0 (574 MB), Silero VAD v6.2.0 (0.9 MB); whisper.cpp small reused from MacWhisper. Env rebuilt from `environment.yml` (pip: pywhispercpp only; mlx/torch gone). Decisions: D13 (resolves D3's library choice).
+
+Benchmarks (warm runs, `/usr/bin/time -l` on the env's python; RSS likely excludes GPU memory):
+
+| Engine, model, options | Wall time per 5 min | Max RSS | Output on music tail (276-300 s) |
+|---|---|---|---|
+| whisper.cpp small (MacWhisper file) | 4.1-4.6 s | 1.0 GB | "Thanks for watching." |
+| mlx small | 5.4 s (cold first run 40.6 s) | 1.0 GB | clean |
+| whisper.cpp turbo q5_0 | 8.1-8.6 s | 1.0 GB | one sentence x14 |
+| mlx turbo | 16.3-23.3 s; 766 vs 655 words across runs | 1.9 GB | "The" x dozens |
+| whisper.cpp turbo, no_context + suppress_nst | 9.0-9.9 s | - | 2 invented segments |
+| mlx turbo, no conditioning + hallucination_silence_threshold 2 | 11.5-13.3 s | - | "Bye." |
+| whisper.cpp turbo + VAD (± no_context) | 6.6-7.0 s, identical across 4 runs | - | "Yeah." |
+
+Speech quality: same across engines for the same model; turbo fixes names small gets wrong ("chat.gbt" → "ChatGPT").
+
+| Verification command | Result |
+|---|---|
+| `conda env remove -n vid_to_pdf` + `conda env create -f environment.yml` | done; opencv/numpy from conda, pywhispercpp/requests from pip |
+| `conda run -n vid_to_pdf python -m pytest -q` | 14 passed, 1 deselected |
+| `conda run -n vid_to_pdf python -m pytest -q -m model` | 1 passed (macOS `say` sentence transcribed) |
+| `/usr/bin/time -l … python -m videotopdf.transcribe videos/Introducing_r1.mp4 -o transcripts/Introducing_r1.srt` | 35.5 s, 1.32 GB max RSS, 280 segments, 3055 words, max repeat "Sure." x3 (genuine demo dialogue) |
+
+Next: plan step 4 (join segments to slide intervals, render transcript under each slide).
+
 ## 2026-10-17 - Plan steps 1-2: videotopdf package and new slide detection
 Changed: replaced `main.py` with the `videotopdf` package (ffmpeg frame reader, settle-then-capture slide detection with build-up merging, PDF pages with a timestamp header band, CLI) and pytest tests on synthetic clips. Removed unused pandas, added pytest. The GitHub repo was still empty and the lecture was not on this machine at session start. Decisions: D10, D11, D12 (supersedes D5).
 

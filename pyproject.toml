@@ -1,3 +1,5 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = [".", "tests"]
+addopts = "-m 'not model'"
+markers = ["model: needs downloaded whisper models (opt-in: pytest -m model)"]

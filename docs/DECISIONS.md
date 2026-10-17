@@ -15,7 +15,7 @@ Every choice between alternatives, and every gap the code leaves that we filled 
 - **Consequences:** Slide detection must output time intervals, not just frames.
 - **Evidence / source:** Owner choice, 2026-10-17.
 
-## D3. Speech-to-text runs locally with Whisper, built into the pipeline (2026-10-17; status: accepted; library choice provisional)
+## D3. Speech-to-text runs locally with Whisper, built into the pipeline (2026-10-17; status: accepted; library chosen in D13)
 - **Context:** Owner used MacWhisper (a GUI around Whisper) because writing STT seemed like reinventing the wheel. Whisper can be called directly from Python on Apple Silicon.
 - **Decision:** The pipeline calls a local Whisper implementation and uses its timestamped segments. Candidate libraries: `mlx-whisper` (Apple Silicon native) and `whisper.cpp` bindings; pick one in plan step 3 after a short comparison and record it as a new D entry.
 - **Alternatives:** Import MacWhisper `.srt` exports - keeps a manual step; cloud STT APIs - ruled out by D4.
@@ -84,3 +84,10 @@ Every choice between alternatives, and every gap the code leaves that we filled 
 - **Alternatives:** Keep `main.py` alongside - two diverging pipelines.
 - **Consequences:** READMEs inside `videos/` would now be safe; not added (the layout is documented in AGENTS.md).
 - **Evidence / source:** `tests/test_cli.py` checks the input clip and a non-video file survive a run.
+
+## D13. STT engine: whisper.cpp via pywhispercpp, large-v3-turbo q5_0, Silero VAD (2026-10-17; status: accepted)
+- **Context:** D3 left the library open between `mlx-whisper` and a whisper.cpp binding; plan step 3 compared them on a 5-minute clip (keynote 2:00-7:00) on the owner's M2 Max.
+- **Decision:** Use `pywhispercpp` 1.5.1 (whisper.cpp with Metal) with `ggml-large-v3-turbo-q5_0.bin` and VAD (`ggml-silero-v6.2.0.bin`), model files in `models/`, never auto-downloaded (D4). Consecutive identical segments are dropped as a safeguard.
+- **Alternatives:** `mlx-whisper` - same quality on speech (same weights) but ~1.5-2x slower on turbo (11.5-23 s vs 6.6-9.9 s per 5 min), ~250 MB of dependencies (torch, numba, scipy) vs 4 MB, run-to-run differences without extra options, and no built-in VAD; `small` model - 2x faster again but misspells names ("chat.gbt"); no VAD - both engines invent text over music (14x repeated sentence, dozens of "The").
+- **Consequences:** VAD can merge across pauses, giving segments up to ~30 s long; the join in plan step 4 must handle segments that span a slide change. MacWhisper's existing `ggml-model-whisper-small.bin` works as a `--model` fallback.
+- **Evidence / source:** Benchmarks in WORKLOG 2026-10-17 (measured; quality judged by reading, no reference transcript - plausible, not established).
