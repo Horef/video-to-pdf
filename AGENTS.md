@@ -46,7 +46,7 @@ Update docs in the same commit as the change that requires it:
 - Keep this file short. Project knowledge belongs in `docs/`; add a rule here only if an agent got it wrong.
 
 ## Git
-- Remote `origin` = `git@github.com:Horef/VideoToPDF.git`, branch `main`, commit directly to `main`.
+- Remote `origin` = `git@github.com:Horef/video-to-pdf.git`, branch `main`, commit directly to `main`.
 - Commit each logical, tested change: Conventional Commits (`feat(scope): …`, `fix: …`, `docs: …`), summary ≤72 chars, body says why; cite D ids.
 - Before committing: tests green (code changes), `git diff --check` clean, `git status` and staged diff reviewed for never-commit files.
 - After committing: `git push origin main`. If the SSH key prompts for a passphrase, run the push unpiped so the user can type it; never ask for or store it. If you can't push, say so.

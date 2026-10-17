@@ -13,12 +13,11 @@ Updated 2026-10-17. Snapshot only - overwrite each session; history is in `docs/
 - No tests.
 - `main.py` deletes non-`.mp4` files in `videos/` and assumes `frames/` and `pdfs/` exist (fresh clones lack them) (D5).
 - Timestamp overlay is white and invisible on white slides.
-- GitHub remote: push not yet confirmed - see WORKLOG.
 
 ## Next actions
-1. Owner: supply one or two real slide-lecture videos for tuning (put in `videos/`).
+1. Owner: download the lecture (YouTube `KV37KIh2ZAk`) into `videos/`; the installed yt-dlp (2025.06.12) is too old for YouTube and needs updating first.
 2. Plan step 1: restructure into a package with a CLI.
 3. Plan step 2: new slide detection with tests on synthetic clips.
 
 ## Blockers
-- No representative slide-lecture test video yet - owner.
+- Lecture test video not downloaded yet - owner (see Next actions 1).
