@@ -1,4 +1,4 @@
-Status: in progress - steps 1-3 done; 5 partly (2026-10-17)
+Status: in progress - steps 1-5 done; verification on a real slide lecture pending (2026-10-17)
 
 # v1: slides + transcript PDF
 
@@ -27,8 +27,8 @@ On `Introducing_r1.mp4` (1529.9 s keynote) `main.py` kept 7 frames: a black fram
    - Merge consecutive slides where the later one contains the earlier (bullet build-ups). Revisited slides stay separate (D11).
    - Flag videos that don't look slide-based and warn (D8).
 3. [x] **Transcription** (`transcribe.py`): compared `mlx-whisper` vs `pywhispercpp` on a 5-minute clip; chose whisper.cpp + turbo q5_0 + VAD (D13). Outputs timestamped segments; `python -m videotopdf.transcribe` writes SRT.
-4. [ ] **Join + render** (`render.py`): assign each segment to the slide interval containing its midpoint (VAD segments can be ~30 s long, D13 - consider splitting long ones by word timestamps); render pages (slide image on top, timestamp, wrapped transcript below) with Pillow or reportlab.
-5. [~] **Tests** (slide detection, CLI, transcription helpers + opt-in real-model test done; join tests come with step 4): tiny synthetic clips generated in the test (solid-color "slides" with fades and a build-up) for slide detection; a canned segment list for the join; no real videos, no model in the default test run.
+4. [x] **Join + render** (`join.py`, `render.py`): assign each segment by its estimated speech midpoint (D14; VAD segments can be ~30 s long, D13); render pages (slide image on top, timestamp, wrapped transcript below) with reportlab (D15).
+5. [x] **Tests** (slide detection, CLI with a stubbed transcriber, transcription helpers, join, render; real-model test opt-in): tiny synthetic clips generated in the test (solid-color "slides" with fades and a build-up) for slide detection; a canned segment list for the join; no real videos, no model in the default test run.
 
 ## Verification
 - `pytest` green on synthetic clips.

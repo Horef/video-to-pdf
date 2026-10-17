@@ -1,6 +1,18 @@
 # Work log
 Newest first. Each entry: what changed, how it was verified, what's next. Never edit or delete past entries.
 
+## 2026-10-17 - Plan step 4: transcript under each slide (join + reportlab PDF)
+Changed: deleted the unused mlx models (~2 GB) from `models/` (owner request). Added `videotopdf/join.py` (segments → slides by estimated speech midpoint, D14), rewrote `render.py` with reportlab (real text, Unicode font, flowing pages, D15), wired transcription into `python -m videotopdf` (default on; `--no-transcript`, `--model`; fails fast with download hint if models are missing). Added `reportlab` to `environment.yml`. Tests for join, render and CLI (transcriber stubbed). Decisions: D14, D15.
+
+| Verification command | Result |
+|---|---|
+| `du -sh models/*` after deletion | only `ggml-large-v3-turbo-q5_0.bin` (547M) and `ggml-silero-v6.2.0.bin` (868K) left |
+| `conda run -n vid_to_pdf python -m pytest -q` | 23 passed, 1 deselected in 2.6 s |
+| `/usr/bin/time -l … python -m videotopdf videos/Introducing_r1.mp4 -o pdfs/v1 -q` | 48 slides, 48-page PDF, 4.8 MB, 43.9 s real, 1.45 GB max RSS |
+| Read all 48 pages of `pdfs/v1/Introducing_r1.pdf` | transcript extractable as text; speech on matching screens (e.g. Coca-Cola question/answer, Spotify login); 15 "(no speech)" near-duplicate demo pages; page 1 holds 3 min of intro speech under the first stable screen |
+
+Next: run on the slide lecture once downloaded; keynote page merging (D7).
+
 ## 2026-10-17 - Plan step 3: STT engine comparison and transcribe.py
 Changed: compared mlx-whisper 0.4.3 and pywhispercpp 1.5.1 (whisper.cpp, Metal) on a 5-minute clip (keynote 2:00-7:00, 16 kHz mono) on an M2 Max; chose whisper.cpp + large-v3-turbo q5_0 + Silero VAD (D13). Added `videotopdf/transcribe.py` (standalone SRT output) and tests. Owner-approved downloads into `models/`: mlx small (481 MB), mlx turbo (1.6 GB), ggml turbo q5_0 (574 MB), Silero VAD v6.2.0 (0.9 MB); whisper.cpp small reused from MacWhisper. Env rebuilt from `environment.yml` (pip: pywhispercpp only; mlx/torch gone). Decisions: D13 (resolves D3's library choice).
 

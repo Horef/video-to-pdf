@@ -91,3 +91,17 @@ Every choice between alternatives, and every gap the code leaves that we filled 
 - **Alternatives:** `mlx-whisper` - same quality on speech (same weights) but ~1.5-2x slower on turbo (11.5-23 s vs 6.6-9.9 s per 5 min), ~250 MB of dependencies (torch, numba, scipy) vs 4 MB, run-to-run differences without extra options, and no built-in VAD; `small` model - 2x faster again but misspells names ("chat.gbt"); no VAD - both engines invent text over music (14x repeated sentence, dozens of "The").
 - **Consequences:** VAD can merge across pauses, giving segments up to ~30 s long; the join in plan step 4 must handle segments that span a slide change. MacWhisper's existing `ggml-model-whisper-small.bin` works as a `--model` fallback.
 - **Evidence / source:** Benchmarks in WORKLOG 2026-10-17 (measured; quality judged by reading, no reference transcript - plausible, not established).
+
+## D14. Transcript-to-slide join by estimated speech midpoint (2026-10-17; status: accepted)
+- **Context:** Plan step 4 said "assign each segment to the slide interval containing its midpoint". With VAD, a segment's end often stretches over the pause after it (up to ~30 s, D13), which pushes the midpoint late, possibly onto the next slide.
+- **Decision:** Anchor each segment at the middle of its *likely* speech: from `start` to `start + min(duration, words / 2.5 words per second)`; assign it to the slide whose interval contains the anchor. Segments are never split; paragraphs break after a ≥ 2 s pause measured the same way.
+- **Alternatives:** Plain midpoint - drifts late on VAD segments; word-level timestamps - more precise but slower and splits sentences across pages; start time only - biased early for long sentences.
+- **Consequences:** A sentence spoken across a slide change goes wholly to one page. 2.5 words/s is a typical rate, not measured per speaker.
+- **Evidence / source:** `tests/test_join.py`; keynote PDF read 2026-10-17 (speech lands on the matching screens; plausible, not measured against ground truth).
+
+## D15. PDF written with reportlab: real text, Unicode font, flowing pages (2026-10-17; status: accepted)
+- **Context:** The Pillow renderer rasterised text into the page image: transcripts would not be searchable or copyable, long ones could not flow, and the built-in font lacked characters (the en dash rendered as a box).
+- **Decision:** `render.py` uses reportlab platypus: A4 portrait, header line, slide image (JPEG embedded as-is, at most 60% of page height), transcript paragraphs that flow onto continuation pages. Font: macOS Arial Unicode if present, else Helvetica (Latin-1 only).
+- **Alternatives:** Keep Pillow - not searchable; HTML → PDF (weasyprint) - heavier dependencies.
+- **Consequences:** Adds `reportlab` (conda-forge). Text extraction from the PDF works (verified by reading the keynote PDF).
+- **Evidence / source:** `tests/test_render.py`; keynote run 2026-10-17 in WORKLOG.
